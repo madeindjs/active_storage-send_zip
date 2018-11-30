@@ -1,5 +1,7 @@
 # ActiveStorage::SendZip
 
+[![Gem Version](https://badge.fury.io/rb/active_storage-send_zip.svg)](https://badge.fury.io/rb/active_storage-send_zip)
+
 Create a zip from one or more Active Storage objects and return it in a rails controller
 
 ## Installation

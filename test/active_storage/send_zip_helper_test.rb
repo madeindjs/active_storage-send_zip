@@ -51,7 +51,6 @@ class ActiveStorage::SendZipTest < Minitest::Test
         ActiveStorageMock.new('bar.txt')
       ]
     }
-    controller = FakeController.new
     files_saved = ActiveStorage::SendZipHelper.save_files_on_server(files)
     assert_equal 2, files_saved.map { |f| File.dirname f }.uniq.count
     assert_equal 3, files_saved.count
@@ -61,7 +60,6 @@ class ActiveStorage::SendZipTest < Minitest::Test
   private
 
   def assert_produce_files(files, count: 1)
-    controller = FakeController.new
     files_saved = ActiveStorage::SendZipHelper.save_files_on_server(files)
     assert_equal count, files_saved.count
     refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(files_saved)

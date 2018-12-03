@@ -2,6 +2,7 @@ require 'active_storage/send_zip/version'
 require 'rails'
 require 'zip'
 require 'tempfile'
+require 'pathname'
 
 module ActiveStorage
   module SendZip
@@ -31,15 +32,31 @@ module ActiveStorage
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
-      # FileUtils.mkdir_p(temp_folder) unless Dir.exist?(temp_folder)
+
+      # count each files to avoid duplicates
+      filepaths = []
 
       # download all ActiveStorage into
-      files.map do |picture|
+      files.each do |picture|
         filename = picture.filename.to_s
         filepath = File.join temp_folder, filename
+
+        # ensure that filename not exists
+        if filepaths.include? filepath
+          # create a new random filenames
+          basename = File.basename filename
+          extension = File.extname filename
+
+          filename = "#{basename}_#{SecureRandom.uuid}#{extension}"
+          filepath = File.join temp_folder, filename
+        end
+
         File.open(filepath, 'wb') { |f| f.write(picture.download) }
-        filepath
+
+        filepaths << filepath
       end
+
+      filepaths
     end
 
     # Create a temporary zip file & return the content as bytes

@@ -43,14 +43,14 @@ class ActiveStorage::SendZipTest < Minitest::Test
     assert_produce_files files, count: 2
   end
 
-  # def test_it_should_save_two_active_support
-  #   files = [
-  #     ActiveStorageMock.new('foo.txt'),
-  #     ActiveStorageMock.new('foo.txt')
-  #   ]
-  #
-  #   assert_produce_files files, count: 2
-  # end
+  def test_it_should_save_two_active_support
+    files = [
+      ActiveStorageMock.new('foo.txt'),
+      ActiveStorageMock.new('foo.txt')
+    ]
+
+    assert_produce_files files, count: 2
+  end
 
   private
 

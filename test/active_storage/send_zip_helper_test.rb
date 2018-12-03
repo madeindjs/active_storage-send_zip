@@ -1,18 +1,6 @@
 require 'test_helper'
 require 'pathname'
 
-class FakeController
-  include ActiveStorage::SendZip
-
-  def test_save_files_on_server(files)
-    save_files_on_server files
-  end
-
-  def test_create_temporary_zip_file(files)
-    create_temporary_zip_file files
-  end
-end
-
 class ActiveStorageMock
   attr_reader :filename, :download
 
@@ -64,18 +52,18 @@ class ActiveStorage::SendZipTest < Minitest::Test
       ]
     }
     controller = FakeController.new
-    files_saved = controller.test_save_files_on_server(files)
+    files_saved = ActiveStorage::SendZipHelper.save_files_on_server(files)
     assert_equal 2, files_saved.map { |f| File.dirname f }.uniq.count
     assert_equal 3, files_saved.count
-    refute_nil controller.test_create_temporary_zip_file(files_saved)
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(files_saved)
   end
 
   private
 
   def assert_produce_files(files, count: 1)
     controller = FakeController.new
-    files_saved = controller.test_save_files_on_server(files)
+    files_saved = ActiveStorage::SendZipHelper.save_files_on_server(files)
     assert_equal count, files_saved.count
-    refute_nil controller.test_create_temporary_zip_file(files_saved)
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(files_saved)
   end
 end

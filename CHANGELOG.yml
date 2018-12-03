@@ -1,4 +1,8 @@
 0.2.0:
+  - move some methods to avoid to polute controller methods
+    - `ActiveStorage::SendZip#save_files_on_server` become `ActiveStorage::SendZipHelperSendZip#save_files_on_server`
+    - `SendZip#save_file_on_server` become `ActiveStorage::SendZipHelperSendZip#save_file_on_server`
+    - `SendZip#create_temporary_zip_file` become `ActiveStorage::SendZipHelperSendZip#create_temporary_zip_file`
   - `send_zip` can now handle an `Hash` param to organize in subfolder
 0.1.1:
   - handle double filenames

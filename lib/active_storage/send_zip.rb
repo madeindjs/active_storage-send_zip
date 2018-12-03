@@ -1,6 +1,7 @@
 require 'active_storage/send_zip/version'
 require 'rails'
 require 'zip'
+require 'tempfile'
 
 module ActiveStorage
   module SendZip
@@ -29,8 +30,8 @@ module ActiveStorage
     def save_files_on_server(files)
       require 'zip'
       # get a temporary folder and create it
-      temp_folder = File.join(Dir.tmpdir, 'user')
-      FileUtils.mkdir_p(temp_folder) unless Dir.exist?(temp_folder)
+      temp_folder = Dir.mktmpdir 'active_storage-send_zip'
+      # FileUtils.mkdir_p(temp_folder) unless Dir.exist?(temp_folder)
 
       # download all ActiveStorage into
       files.map do |picture|

@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'pathname'
 
 class FakeController
   include ActiveStorage::SendZip
@@ -50,6 +51,23 @@ class ActiveStorage::SendZipTest < Minitest::Test
     ]
 
     assert_produce_files files, count: 2
+  end
+
+  def test_it_should_save_files_in_differents_folders
+    files = {
+      'folder A' => [
+        ActiveStorageMock.new('foo.txt'),
+        ActiveStorageMock.new('foo.txt')
+      ],
+      'folder B' => [
+        ActiveStorageMock.new('bar.txt')
+      ]
+    }
+    controller = FakeController.new
+    files_saved = controller.test_save_files_on_server(files)
+    assert_equal 2, files_saved.map(&:dirname).uniq.count
+    assert_equal 3, files_saved.count
+    refute_nil controller.test_create_temporary_zip_file(files_saved)
   end
 
   private

@@ -1,0 +1,7 @@
+0.2.0:
+  - `send_zip` can now handle an `Hash` param to organize in subfolder
+0.1.1:
+  - handle double filenames
+  - use a radom folder instead of fixed one (this was problematic qith multiples queries at the same times)
+0.1.0:
+  - first versions

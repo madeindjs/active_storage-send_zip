@@ -22,6 +22,8 @@ Or install it yourself as:
 
 ## Usage
 
+### With `Array`
+
 Assuming you have an ActiveRecord model with ActiveStorage like this:
 
 ~~~ruby
@@ -49,6 +51,48 @@ class UsersController < ApplicationController
     end
   end
 end
+~~~
+
+Will produce a `.zip` archive like this:
+
+~~~
+├── a.jpg
+├── b.png
+└── c.gif
+~~~
+
+Ii will also prevent duplicate filename and add an [`SecureRandom.uuid`](https://ruby-doc.org/stdlib-2.3.0/libdoc/securerandom/rdoc/SecureRandom.html) if two files as the same name.
+
+
+### With `Hash`
+
+You can also pass an `Hash` parameter at `send_zip` method to organize files in sublfolder:
+
+~~~ruby
+# app/controllers/holidays_controller.rb
+class HolidaysController < ApplicationController
+  include ActiveStorage::SendZip
+
+  def zip
+    send_zip {
+      'Holidays in Lyon <3' => Holidays.where(place: 'lyon').first.pictures,
+      'Holidays in Paris' => Holidays.where(place: 'paris').first.pictures,
+    }
+  end
+end
+~~~
+
+Will produce a `.zip` archive like this:
+
+~~~
+├── Holidays in Lyon <3
+│   ├── a.jpg
+│   ├── b.png
+│   └── c.gif
+└── Holidays in Paris
+    ├── a.jpg
+    ├── b.png
+    └── c.gif
 ~~~
 
 ## Development

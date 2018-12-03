@@ -65,7 +65,7 @@ class ActiveStorage::SendZipTest < Minitest::Test
     }
     controller = FakeController.new
     files_saved = controller.test_save_files_on_server(files)
-    assert_equal 2, files_saved.map(&:dirname).uniq.count
+    assert_equal 2, files_saved.map { |f| File.dirname f }.uniq.count
     assert_equal 3, files_saved.count
     refute_nil controller.test_create_temporary_zip_file(files_saved)
   end

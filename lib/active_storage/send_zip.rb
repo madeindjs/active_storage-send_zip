@@ -33,17 +33,34 @@ module ActiveStorage
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
-      # download all ActiveStorage into
-      files.map do |file|
-        save_file_on_server(file, temp_folder)
+      if files.is_a? Array
+        return files.map { |file| save_file_on_server(file, temp_folder) }
+      elsif files.is_a? Hash
+        filepaths = []
+
+        files.each do |subfolder, filesHash|
+          filesHash.each { |f| filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder) }
+        end
+
+        return filepaths
       end
     end
 
+    # Save the given file on the server
+    #
+    # @param files [ActiveStorage::Attached] files to save
+    # @param files [String] where to store the file
+    # @return [String] the filepath of file created
     def save_file_on_server(file, folder, subfolder: nil)
       filename = file.filename.to_s
-      filepath = File.join folder, filename
 
-      # ensure that filename not exists
+      folder = File.join(folder, subfolder) unless subfolder.nil?
+      Dir.mkdir(folder) unless Dir.exist?(folder)
+
+      # build filepath & create path if not exists
+      filepath = File.join(folder, filename)
+
+      # Ensure that filename not already exists
       if File.exist? filepath
         # create a new random filenames
         basename = File.basename filename

@@ -33,30 +33,28 @@ module ActiveStorage
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
-      # count each files to avoid duplicates
-      filepaths = []
-
       # download all ActiveStorage into
-      files.each do |picture|
-        filename = picture.filename.to_s
-        filepath = File.join temp_folder, filename
+      files.map do |file|
+        save_file_on_server(file, temp_folder)
+      end
+    end
 
-        # ensure that filename not exists
-        if filepaths.include? filepath
-          # create a new random filenames
-          basename = File.basename filename
-          extension = File.extname filename
+    def save_file_on_server(file, folder, subfolder: nil)
+      filename = file.filename.to_s
+      filepath = File.join folder, filename
 
-          filename = "#{basename}_#{SecureRandom.uuid}#{extension}"
-          filepath = File.join temp_folder, filename
-        end
+      # ensure that filename not exists
+      if File.exist? filepath
+        # create a new random filenames
+        basename = File.basename filename
+        extension = File.extname filename
 
-        File.open(filepath, 'wb') { |f| f.write(picture.download) }
-
-        filepaths << filepath
+        filename = "#{basename}_#{SecureRandom.uuid}#{extension}"
+        filepath = File.join folder, filename
       end
 
-      filepaths
+      File.open(filepath, 'wb') { |f| f.write(file.download) }
+      filepath
     end
 
     # Create a temporary zip file & return the content as bytes

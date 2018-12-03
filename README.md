@@ -1,6 +1,7 @@
 # ActiveStorage::SendZip
 
 [![Gem Version](https://badge.fury.io/rb/active_storage-send_zip.svg)](https://badge.fury.io/rb/active_storage-send_zip)
+[![MIT Licence](https://badges.frapsoft.com/os/mit/mit.png?v=103)](https://opensource.org/licenses/mit-license.php)
 
 Create a zip from one or more Active Storage objects and return it in a rails controller
 
@@ -104,10 +105,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/madeindjs/active_storage-send_zip. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Code of Conduct
 

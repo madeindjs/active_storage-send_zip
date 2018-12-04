@@ -10,23 +10,26 @@ module ActiveStorage
     # Download active storage files on server in a temporary folder
     #
     # @param files [ActiveStorage::Attached::Many] files to save
-    # @return [Array<String>] files paths of saved files
+    # @return [String] folder path of saved files
     def self.save_files_on_server(files)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
       if files.is_a? Array
-        return files.map { |file| save_file_on_server(file, temp_folder) }
+        files.each { |file| save_file_on_server(file, temp_folder) }
       elsif files.is_a? Hash
         filepaths = []
 
         files.each do |subfolder, filesHash|
-          filesHash.each { |f| filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder) }
+          filesHash = [filesHash] unless filesHash.is_a? Array
+          filesHash.each do |f|
+            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder.to_s)
+          end
         end
-
-        return filepaths
       end
+
+      temp_folder
     end
 
     # Save the given file on the server
@@ -59,10 +62,13 @@ module ActiveStorage
 
     # Create a temporary zip file & return the content as bytes
     #
-    # @param filepaths [Array<String>] files paths
+    # @param folderpath [String] folder path
     # @return [String] as content of zip
-    def self.create_temporary_zip_file(filepaths)
+    def self.create_temporary_zip_file(folderpath)
       temp_file = Tempfile.new('user.zip')
+      folderpath_glob = File.join folderpath, '**', '*'
+
+      files = Dir.glob(folderpath_glob).reject { |e| File.directory? e }
 
       begin
         # Initialize the temp file as a zip file
@@ -70,19 +76,18 @@ module ActiveStorage
 
         # open the zip
         Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip|
-          filepaths.each do |filepath|
-            filename = File.basename filepath
-            # add file into the zip
-            zip.add filename, filepath
+          files.each do |filepath|
+            filepath_zip = filepath.sub(folderpath, '').sub(File::SEPARATOR, '')
+            zip.add filepath_zip, filepath
           end
         end
 
         return File.read(temp_file.path)
       ensure
         # close all ressources & remove temporary files
-        temp_file.close
-        temp_file.unlink
-        filepaths.each { |filepath| FileUtils.rm(filepath) }
+        # temp_file.close
+        # temp_file.unlink
+        # FileUtils.rm_rf(folderpath)
       end
     end
   end

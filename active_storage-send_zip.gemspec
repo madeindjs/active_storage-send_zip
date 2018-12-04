@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['contact@rousseau-alexandre.fr']
 
   spec.summary       = 'Create a zip from one or more Active Storage objects'
-  spec.description   = 'Create a zip from one or more Active Storage objects and return it in a rails controller'
+  spec.description   = 'Add a `send_zip` method in your Rails controller to send a `.zip` file containing one (or many) ActiveStorage object(s)'
   spec.homepage      = 'https://github.com/madeindjs/active_storage-send_zip'
   spec.license       = 'MIT'
 

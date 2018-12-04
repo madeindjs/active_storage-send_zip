@@ -3,23 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/active_storage-send_zip.svg)](https://badge.fury.io/rb/active_storage-send_zip)
 [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.png?v=103)](https://opensource.org/licenses/mit-license.php)
 
-Create a zip from one or more Active Storage objects and return it in a rails controller
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'active_storage-send_zip'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install active_storage-send_zip
+Add a `send_zip` method in your Rails controller to send a `.zip` file containing one or many [ActiveStorage](https://edgeguides.rubyonrails.org/active_storage_overview.html) objects.
 
 ## Usage
 
@@ -95,6 +79,22 @@ Will produce a `.zip` archive like this:
     ├── b.png
     └── c.gif
 ~~~
+
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'active_storage-send_zip'
+```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install active_storage-send_zip
 
 ## Development
 

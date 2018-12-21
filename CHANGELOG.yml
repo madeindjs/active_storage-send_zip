@@ -1,3 +1,5 @@
+0,3,1:
+  - correct comportement when `ActiveStorage::Attached::Many` is given as paramter
 0.3.0:
   - correct subfolders creation (and break some methods signature)
 0.2.0:

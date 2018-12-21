@@ -54,6 +54,12 @@ class ActiveStorage::SendZipTest < Minitest::Test
     assert_produce_nested_files files, folder_count: 2, files_count: 3
   end
 
+  def test_it_should_raise_an_exception
+    assert_raises ArgumentError do
+      ActiveStorage::SendZipHelper.save_files_on_server 'bad boi'
+    end
+  end
+
   def test_it_should_save_files_in_differents_folders_with_root_files
     files = {
       'folder A' => [

@@ -9,16 +9,14 @@ module ActiveStorage
   module SendZipHelper
     # Download active storage files on server in a temporary folder
     #
-    # @param files [ActiveStorage::Attached::Many] files to save
+    # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
     # @return [String] folder path of saved files
     def self.save_files_on_server(files)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
-      if files.is_a? Array
-        files.each { |file| save_file_on_server(file, temp_folder) }
-      elsif files.is_a? Hash
+      if files.is_a? Hash
         filepaths = []
 
         files.each do |subfolder, filesHash|
@@ -27,6 +25,10 @@ module ActiveStorage
             filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder.to_s)
           end
         end
+      elsif files.respond_to? :each
+        files.each { |file| save_file_on_server(file, temp_folder) }
+      else
+        raise ArgumentError, '`files` must be an hash or an iterable object'
       end
 
       temp_folder

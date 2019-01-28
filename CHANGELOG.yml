@@ -1,4 +1,6 @@
-0,3,1:
+0.3.2:
+  - correct rubyzip dependency
+0.3.1:
   - correct comportement when `ActiveStorage::Attached::Many` is given as paramter
 0.3.0:
   - correct subfolders creation (and break some methods signature)

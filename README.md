@@ -80,6 +80,48 @@ Will produce a `.zip` archive like this:
     └── c.gif
 ~~~
 
+## Options
+
+### Set custom zip filename
+
+~~~ruby
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  include ActiveStorage::SendZip
+
+  # ...
+
+  # GET /users/1
+  # GET /users/1.zip
+  def show
+    respond_to do |format|
+      format.html { render }
+      format.zip { send_zip(@user.pictures, filename: 'my_zip_name.zip') }
+    end
+  end
+end
+~~~
+
+### Set custom file names
+
+~~~ruby
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  include ActiveStorage::SendZip
+
+  # ...
+
+  # GET /users/1
+  # GET /users/1.zip
+  def show
+    respond_to do |format|
+      format.html { render }
+      format.zip { send_zip(@user.pictures, files_name_map: @user.pictures.map { |p| "custom_#{p..filename.to_s}" } ) }
+    end
+  end
+end
+~~~
+
 ## Installation
 
 Add this line to your application's Gemfile:

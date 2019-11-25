@@ -75,6 +75,33 @@ class ActiveStorage::SendZipTest < Minitest::Test
     assert_produce_nested_files files, folder_count: 4, files_count: 5
   end
 
+  def test_it_should_rename_files_with_filenames_map_hash_values
+    filenames_map = {
+      'folder A' => ['hello'],
+      'folder B' => ['world']
+     }
+    files = {
+      'folder A' => [
+        ActiveStorageMock.new('foo.txt')
+      ],
+      'folder B' => [
+        ActiveStorageMock.new('bar.txt')
+      ]
+    }
+
+    assert_rename_nested_files(files, filenames_map)
+  end
+
+  def test_it_should_rename_files_with_filenames_map_array_values
+    filenames_map = ['hello', 'world']
+    files = [
+      ActiveStorageMock.new('foo.txt'),
+      ActiveStorageMock.new('bar.txt')
+    ]
+
+    assert_rename_files(files, filenames_map)
+  end
+
   private
 
   def assert_produce_nested_files(files, folder_count: 1, files_count: 1)
@@ -100,4 +127,27 @@ class ActiveStorage::SendZipTest < Minitest::Test
     assert_equal count, files_path.count
     refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
   end
+
+  def assert_rename_nested_files(files, filenames_map)
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files, filenames_map)
+    temp_folder_glob = File.join temp_folder, '**', '*'
+
+    glob = Dir.glob(temp_folder_glob)
+
+    files_paths = glob.reject { |e| File.directory? e }
+    files_names = files_paths.map { |f| f.split('/').last.split('.').first }
+    assert_equal files_names.sort, filenames_map.values.flatten
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
+  end
+
+  def assert_rename_files(files, filenames_map)
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files, filenames_map)
+
+    temp_folder_glob = File.join temp_folder, '**', '*'
+    files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }
+    files_names = files_path.map { |f| f.split('/').last.split('.').first }
+    assert_equal files_names.sort, filenames_map.sort
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
+  end
+
 end

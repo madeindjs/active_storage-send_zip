@@ -10,9 +10,9 @@ module ActiveStorage
     # Download active storage files on server in a temporary folder
     #
     # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
-    # @params files_name_map [Array|Hash] an object with the same structure of files with the name for each file
+    # @params filenames_map [Hash|Array|nil] an object with the same structure of files with the name for each file
     # @return [String] folder path of saved files
-    def self.save_files_on_server(files, files_name_map = nil)
+    def self.save_files_on_server(files, filenames_map = nil)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
@@ -20,20 +20,20 @@ module ActiveStorage
       if files.is_a? Hash
         filepaths = []
 
-        raise ArgumentError, '`files_name_map` must be an hash like files' if files_name_map && !files_name_map.is_a?(Hash)
+        raise ArgumentError, '`filenames_map` must be an hash like files' if filenames_map && !filenames_map.is_a?(Hash)
 
         files.each do |subfolder, filesHash|
           filesHash = [filesHash] unless filesHash.is_a? Array
           filesHash.each_with_index do |f, i|
-            file_name_map = files_name_map && files_name_map[subfolder] ? files_name_map[subfolder][i] : nil
-            filepaths << save_file_on_server(f, temp_folder, file_name_map, subfolder: subfolder.to_s)
+            filename_map = filenames_map && filenames_map[subfolder] ? filenames_map[subfolder][i] : nil
+            filepaths << save_file_on_server(f, temp_folder, filename_map, subfolder: subfolder.to_s)
           end
         end
       elsif files.respond_to? :each
-        raise ArgumentError, '`files_name_map` must be an iterable object like files' if files_name_map && !files_name_map.respond_to?(:each)
+        raise ArgumentError, '`filenames_map` must be an iterable object like files' if filenames_map && !filenames_map.respond_to?(:each)
         files.each_with_index do |f, i|
-          file_name_map = files_name_map ? files_name_map[i] : nil
-          save_file_on_server(f, temp_folder, file_name_map)
+          filename_map = filenames_map ? filenames_map[i] : nil
+          save_file_on_server(f, temp_folder, filename_map)
         end
       else
         raise ArgumentError, '`files` must be an hash or an iterable object'
@@ -46,10 +46,12 @@ module ActiveStorage
     #
     # @param file [ActiveStorage::Attached] files to save
     # @param folder [String] where to store the file
+    # @param basename [String] the name of the file
     # @return [String] the filepath of file created
-    def self.save_file_on_server(file, folder, file_name, subfolder: nil)
-      ext = file.filename.to_s.split('.').last
-      filename = file_name ? "#{file_name}.#{ext}" : file.filename.to_s
+    def self.save_file_on_server(file, folder, basename, subfolder: nil)
+      basename ||= File.basename(file.filename.to_s)
+      extension = File.extname(file.filename.to_s)
+      filename = "#{basename}#{extension}"
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
       Dir.mkdir(folder) unless Dir.exist?(folder)
@@ -59,10 +61,6 @@ module ActiveStorage
 
       # Ensure that filename not already exists
       if File.exist? filepath
-        # create a new random filenames
-        basename = File.basename filename
-        extension = File.extname filename
-
         filename = "#{basename}_#{SecureRandom.uuid}#{extension}"
         filepath = File.join folder, filename
       end

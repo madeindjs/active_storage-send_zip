@@ -14,10 +14,10 @@ module ActiveStorage
     #
     # @param active_storages [ActiveStorage::Attached::Many] files to save
     # @param filename [ActiveStorage::Attached::Many] files to save
-    # @params files_name_map [Array|Hash] an object with the same structure of active_storages with the name for each file
-    def send_zip(active_storages, filename: 'my.zip', files_name_map: nil)
+    # @params filenames_map [Hash|Array|nil] an object with the same structure of active_storages with the name for each file
+    def send_zip(active_storages, filename: 'my.zip', filenames_map: nil)
       require 'zip'
-      files = SendZipHelper.save_files_on_server(active_storages, files_name_map)
+      files = SendZipHelper.save_files_on_server(active_storages, filenames_map)
       zip_data = SendZipHelper.create_temporary_zip_file files
 
       send_data(zip_data, type: 'application/zip', filename: filename)

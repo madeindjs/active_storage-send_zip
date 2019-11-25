@@ -10,8 +10,9 @@ module ActiveStorage
     # Download active storage files on server in a temporary folder
     #
     # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
+    # @params files_name_map [Array|Hash] an object with the same structure of files with the name for each file
     # @return [String] folder path of saved files
-    def self.save_files_on_server(files)
+    def self.save_files_on_server(files, files_name_map = nil)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
@@ -19,14 +20,21 @@ module ActiveStorage
       if files.is_a? Hash
         filepaths = []
 
+        raise ArgumentError, '`files_name_map` must be an hash like files' if files_name_map && !files_name_map.is_a?(Hash)
+
         files.each do |subfolder, filesHash|
           filesHash = [filesHash] unless filesHash.is_a? Array
-          filesHash.each do |f|
-            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder.to_s)
+          filesHash.each_with_index do |f, i|
+            file_name_map = files_name_map && files_name_map[subfolder] ? files_name_map[subfolder][i] : nil
+            filepaths << save_file_on_server(f, temp_folder, file_name_map, subfolder: subfolder.to_s)
           end
         end
       elsif files.respond_to? :each
-        files.each { |file| save_file_on_server(file, temp_folder) }
+        raise ArgumentError, '`files_name_map` must be an iterable object like files' if files_name_map && !files_name_map.respond_to?(:each)
+        files.each_with_index do |f, i|
+          file_name_map = files_name_map ? files_name_map[i] : nil
+          save_file_on_server(f, temp_folder, file_name_map)
+        end
       else
         raise ArgumentError, '`files` must be an hash or an iterable object'
       end
@@ -39,8 +47,8 @@ module ActiveStorage
     # @param file [ActiveStorage::Attached] files to save
     # @param folder [String] where to store the file
     # @return [String] the filepath of file created
-    def self.save_file_on_server(file, folder, subfolder: nil)
-      filename = file.filename.to_s
+    def self.save_file_on_server(file, folder, file_name, subfolder: nil)
+      filename = file_name ? file_name : file.filename.to_s
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
       Dir.mkdir(folder) unless Dir.exist?(folder)

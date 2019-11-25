@@ -116,7 +116,7 @@ class UsersController < ApplicationController
   def show
     respond_to do |format|
       format.html { render }
-      format.zip { send_zip(@user.pictures, files_name_map: @user.pictures.map { |p| "custom_#{p..filename.to_s}" } ) }
+      format.zip { send_zip(@user.pictures, files_name_map: @user.pictures.map { |p| "custom_#{p.filename.to_s}" } ) }
     end
   end
 end

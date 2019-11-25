@@ -48,7 +48,8 @@ module ActiveStorage
     # @param folder [String] where to store the file
     # @return [String] the filepath of file created
     def self.save_file_on_server(file, folder, file_name, subfolder: nil)
-      filename = file_name ? file_name : file.filename.to_s
+      ext = file.filename.to_s.split('.').last
+      filename = file_name ? "#{file_name}.#{ext}" : file.filename.to_s
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
       Dir.mkdir(folder) unless Dir.exist?(folder)

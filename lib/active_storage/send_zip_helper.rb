@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails'
 require 'zip'
 require 'tempfile'
@@ -17,14 +19,7 @@ module ActiveStorage
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
       if files.is_a? Hash
-        filepaths = []
-
-        files.each do |subfolder, filesHash|
-          filesHash = [filesHash] unless filesHash.is_a? Array
-          filesHash.each do |f|
-            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder.to_s)
-          end
-        end
+        filepaths = construct_with_hash(files, temp_folder)
       elsif files.respond_to? :each
         files.each { |file| save_file_on_server(file, temp_folder) }
       else
@@ -32,6 +27,34 @@ module ActiveStorage
       end
 
       temp_folder
+    end
+
+    # Parses hash to build out directories where folders are key names
+    #
+    # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
+    # @return [String] folder path of saved files
+    def self.construct_with_hash(files, temp_folder)
+      filepaths = []
+
+      files.each do |subfolder, filesHash|
+        filesHash = [filesHash] unless filesHash.is_a? Array
+
+        filesHash.each do |f|
+          # Build directory strucutre recursively for hashes
+          if f.is_a? Hash
+            # Build folder for hash entry
+            folder = File.join(temp_folder, subfolder)
+            Dir.mkdir(folder) unless Dir.exist?(folder)
+
+            filepaths += construct_with_hash(f, folder)
+          # Save attachement
+          else
+            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder)
+          end
+        end
+      end
+
+      filepaths
     end
 
     # Save the given file on the server
@@ -84,7 +107,7 @@ module ActiveStorage
           end
         end
 
-        return File.read(temp_file.path)
+        File.read(temp_file.path)
       ensure
         # close all ressources & remove temporary files
         # temp_file.close

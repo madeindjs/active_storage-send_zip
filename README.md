@@ -62,8 +62,8 @@ class HolidaysController < ApplicationController
     send_zip {
       'Holidays in Lyon <3' => Holidays.where(place: 'lyon').first.pictures,
       'Holidays in Paris' => [
-        Holidays.where(place: 'paris').first.pictures,
-        'Eiffle Tower' => Holidays.where(place: 'eiffle_tower').first.pictures
+        'Eiffle Tower' => Holidays.where(place: 'eiffle_tower').first.pictures,
+        Holidays.where(place: 'paris').first.pictures
       ]
     }
   end

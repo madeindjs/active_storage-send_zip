@@ -43,13 +43,13 @@ module ActiveStorage
           # Build directory strucutre recursively for hashes
           if f.is_a? Hash
             # Build folder for hash entry
-            folder = File.join(temp_folder, subfolder)
+            folder = File.join(temp_folder, subfolder.to_s)
             Dir.mkdir(folder) unless Dir.exist?(folder)
 
             filepaths += construct_with_hash(f, folder)
           # Save attachement
           else
-            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder)
+            filepaths << save_file_on_server(f, temp_folder, subfolder: subfolder.to_s)
           end
         end
       end

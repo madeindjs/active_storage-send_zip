@@ -61,7 +61,10 @@ class HolidaysController < ApplicationController
   def zip
     send_zip {
       'Holidays in Lyon <3' => Holidays.where(place: 'lyon').first.pictures,
-      'Holidays in Paris' => Holidays.where(place: 'paris').first.pictures,
+      'Holidays in Paris' => [
+        'Eiffle Tower' => Holidays.where(place: 'eiffle_tower').first.pictures,
+        Holidays.where(place: 'paris').first.pictures
+      ]
     }
   end
 end
@@ -75,6 +78,10 @@ Will produce a `.zip` archive like this:
 │   ├── b.png
 │   └── c.gif
 └── Holidays in Paris
+    ├── Eiffle Tower
+        ├── d.jpg
+        ├── e.jpg
+        ├── f.jpg
     ├── a.jpg
     ├── b.png
     └── c.gif

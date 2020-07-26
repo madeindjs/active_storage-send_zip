@@ -7,7 +7,7 @@ require 'active_storage/send_zip/version'
 Gem::Specification.new do |spec|
   spec.name          = 'active_storage-send_zip'
   spec.version       = ActiveStorage::SendZip::VERSION
-  spec.authors       = ['Alexandre Rousseau']
+  spec.authors       = ['Alexandre Rousseau', 'Maxime `biximilien` Gauthier']
   spec.email         = ['contact@rousseau-alexandre.fr']
 
   spec.summary       = 'Create a zip from one or more Active Storage objects'
@@ -37,9 +37,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_development_dependency 'bundler', '~> 1.17'
+  spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'minitest', '~> 5.0'
-  spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_development_dependency 'rake'
   spec.add_dependency 'rails', '> 5.2'
   spec.add_dependency 'rubyzip', '< 3.0'
 end

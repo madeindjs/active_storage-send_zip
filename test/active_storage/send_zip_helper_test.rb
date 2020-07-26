@@ -4,11 +4,50 @@ require 'test_helper'
 require 'pathname'
 
 class ActiveStorageMock
-  attr_reader :filename, :download
+  attr_reader :filename, :download, :key
 
   def initialize(filename = 'foo.txt')
     @filename = filename
     @download = 'content of file'
+    @key = 'service key'
+    @service = ActiveStorageServiceMock.new(self)
+  end
+
+  def service
+    @service
+  end
+
+  def variant(resize_to_limit: nil)
+    ActiveStorageVariantMock.new(resize_to_limit)
+  end
+end
+
+class ActiveStorageVariantMock
+  attr_reader :key, :download
+
+  def initialize(resize_to_limit = nil)
+    @resize_to_limit = resize_to_limit
+    @download = 'content of file'
+    @key = 'service key'
+    @service = ActiveStorageServiceMock.new(self)
+  end
+
+  def service
+    @service
+  end
+
+  def processed
+    self
+  end
+end
+
+class ActiveStorageServiceMock
+  def initialize(mock)
+    @mock = mock
+  end
+
+  def download(key)
+    @mock.download
   end
 end
 
@@ -80,6 +119,15 @@ class ActiveStorage::SendZipTest < Minitest::Test
     assert_produce_nested_files files, folder_count: 5, files_count: 6
   end
 
+  def test_it_should_resize_files
+    files = [
+      ActiveStorageMock.new,
+      ActiveStorageMock.new
+    ]
+
+    assert_produce_resized_files files, count: 2
+  end
+
   private
 
   def assert_produce_nested_files(files, folder_count: 1, files_count: 1)
@@ -98,6 +146,16 @@ class ActiveStorage::SendZipTest < Minitest::Test
 
   def assert_produce_files(files, count: 1)
     temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files)
+
+    temp_folder_glob = File.join temp_folder, '**', '*'
+    files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }
+
+    assert_equal count, files_path.count
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
+  end
+
+  def assert_produce_resized_files(files, count: 1)
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files, resize_to_limit: [640, 480])
 
     temp_folder_glob = File.join temp_folder, '**', '*'
     files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }

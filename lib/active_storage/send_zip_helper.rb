@@ -12,8 +12,9 @@ module ActiveStorage
     # Download active storage files on server in a temporary folder
     #
     # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
+    # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     # @return [String] folder path of saved files
-    def self.save_files_on_server(files)
+    def self.save_files_on_server(files, resize_to_limit: nil)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
@@ -21,7 +22,7 @@ module ActiveStorage
       if files.is_a? Hash
         filepaths = construct_with_hash(files, temp_folder)
       elsif files.respond_to? :each
-        files.each { |file| save_file_on_server(file, temp_folder) }
+        files.each { |file| save_file_on_server(file, temp_folder, resize_to_limit: resize_to_limit) }
       else
         raise ArgumentError, '`files` must be an hash or an iterable object'
       end
@@ -61,8 +62,9 @@ module ActiveStorage
     #
     # @param file [ActiveStorage::Attached] files to save
     # @param folder [String] where to store the file
+    # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     # @return [String] the filepath of file created
-    def self.save_file_on_server(file, folder, subfolder: nil)
+    def self.save_file_on_server(file, folder, subfolder: nil, resize_to_limit: nil)
       filename = file.filename.to_s
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
@@ -81,7 +83,14 @@ module ActiveStorage
         filepath = File.join folder, filename
       end
 
-      File.open(filepath, 'wb') { |f| f.write(file.download) }
+      # resize images if needed
+      unless resize_to_limit.nil?
+        file = file.variant(resize_to_limit: resize_to_limit).processed
+      end
+
+      # write the file on disk
+      File.open(filepath, 'wb') { |f| f.write(file.service.download(file.key)) }
+
       filepath
     end
 

@@ -12,6 +12,7 @@ module ActiveStorage
     # Download active storage files on server in a temporary folder
     #
     # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
+    # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     # @return [String] folder path of saved files
     def self.save_files_on_server(files, resize_to_limit: nil)
       require 'zip'
@@ -61,6 +62,7 @@ module ActiveStorage
     #
     # @param file [ActiveStorage::Attached] files to save
     # @param folder [String] where to store the file
+    # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     # @return [String] the filepath of file created
     def self.save_file_on_server(file, folder, subfolder: nil, resize_to_limit: nil)
       filename = file.filename.to_s
@@ -81,12 +83,10 @@ module ActiveStorage
         filepath = File.join folder, filename
       end
 
+      # resize images if needed
       unless resize_to_limit.nil?
         file = file.variant(resize_to_limit: resize_to_limit).processed
       end
-
-      # read file from service
-      # contents = URI.open(file.service.send(:url_for, file.key)) { |f| f.read }
 
       # write the file on disk
       File.open(filepath, 'wb') { |f| f.write(file.service.download(file.key)) }

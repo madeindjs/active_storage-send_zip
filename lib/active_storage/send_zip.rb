@@ -14,7 +14,7 @@ module ActiveStorage
     #
     # @param active_storages [ActiveStorage::Attached::Many] files to save
     # @param filename [ActiveStorage::Attached::Many] files to save
-    # @param resize_to_limit [] resize to limit filter
+    # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     def send_zip(active_storages, filename: 'my.zip', resize_to_limit: nil)
       require 'zip'
       files = SendZipHelper.save_files_on_server active_storages, resize_to_limit: resize_to_limit

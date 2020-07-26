@@ -86,10 +86,10 @@ module ActiveStorage
       end
 
       # read file from service
-      contents = URI.open(file.service.send(:url_for, file.key)) { |f| f.read }
+      # contents = URI.open(file.service.send(:url_for, file.key)) { |f| f.read }
 
       # write the file on disk
-      File.open(filepath, 'wb') { |f| f.write(contents) }
+      File.open(filepath, 'wb') { |f| f.write(file.service.download(file.key)) }
 
       filepath
     end

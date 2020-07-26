@@ -7,7 +7,7 @@ require 'active_storage/send_zip/version'
 Gem::Specification.new do |spec|
   spec.name          = 'active_storage-send_zip'
   spec.version       = ActiveStorage::SendZip::VERSION
-  spec.authors       = ['Alexandre Rousseau']
+  spec.authors       = ['Alexandre Rousseau', 'Maxime `biximilien` Gauthier']
   spec.email         = ['contact@rousseau-alexandre.fr']
 
   spec.summary       = 'Create a zip from one or more Active Storage objects'

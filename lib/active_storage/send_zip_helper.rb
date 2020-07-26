@@ -82,11 +82,11 @@ module ActiveStorage
       end
 
       unless resize_to_limit.nil?
-        file = file.variant(resize_to_limit: resize_to_limit)
+        file = file.variant(resize_to_limit: resize_to_limit).processed
       end
 
       # read file from service
-      contents = open(file.service_url) { |f| f.read }
+      contents = URI.open(file.service.send(:url_for, file.key)) { |f| f.read }
 
       # write the file on disk
       File.open(filepath, 'wb') { |f| f.write(contents) }

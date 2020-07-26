@@ -13,7 +13,7 @@ module ActiveStorage
     #
     # @param files [ActiveStorage::Attached::One|ActiveStorage::Attached::Many|Array|Hash] file(s) to save
     # @return [String] folder path of saved files
-    def self.save_files_on_server(files)
+    def self.save_files_on_server(files, resize_to_limit: nil)
       require 'zip'
       # get a temporary folder and create it
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
@@ -21,7 +21,7 @@ module ActiveStorage
       if files.is_a? Hash
         filepaths = construct_with_hash(files, temp_folder)
       elsif files.respond_to? :each
-        files.each { |file| save_file_on_server(file, temp_folder) }
+        files.each { |file| save_file_on_server(file, temp_folder, resize_to_limit: resize_to_limit) }
       else
         raise ArgumentError, '`files` must be an hash or an iterable object'
       end
@@ -62,7 +62,7 @@ module ActiveStorage
     # @param file [ActiveStorage::Attached] files to save
     # @param folder [String] where to store the file
     # @return [String] the filepath of file created
-    def self.save_file_on_server(file, folder, subfolder: nil)
+    def self.save_file_on_server(file, folder, subfolder: nil, resize_to_limit: nil)
       filename = file.filename.to_s
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
@@ -81,7 +81,16 @@ module ActiveStorage
         filepath = File.join folder, filename
       end
 
-      File.open(filepath, 'wb') { |f| f.write(file.download) }
+      unless resize_to_limit.nil?
+        file = file.variant(resize_to_limit: resize_to_limit)
+      end
+
+      # read file from service
+      contents = open(file.service_url) { |f| f.read }
+
+      # write the file on disk
+      File.open(filepath, 'wb') { |f| f.write(contents) }
+
       filepath
     end
 

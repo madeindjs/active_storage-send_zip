@@ -87,6 +87,34 @@ Will produce a `.zip` archive like this:
     └── c.gif
 ~~~
 
+
+### Resize images before downloading
+
+You can resize the images before zipping and downloading them :
+
+~~~ruby
+# app/controllers/galleries_controller.rb
+class GalleriesController < ApplicationController
+  include ActiveStorage::SendZip
+
+  # ...
+
+  # GET /galleries/1/download
+  def download
+    respond_to do |format|
+      if params[:format] == 'web_size'
+        format.zip { send_zip @gallery.photos, resize_to_limit: [1920, 1080] }
+      elsif params[:format] == 'tiny'
+        format.zip { send_zip @gallery.photos, resize_to_limit: [480, 270] }
+      else
+        format.zip { send_zip @gallery.photos }
+      end
+    end
+  end
+end
+~~~
+
+
 ## Installation
 
 Add this line to your application's Gemfile:

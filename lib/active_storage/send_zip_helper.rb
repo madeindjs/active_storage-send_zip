@@ -65,7 +65,7 @@ module ActiveStorage
     # @param resize_to_limit [Array] resize to limit filter in ImageProcessing format [width, height]
     # @return [String] the filepath of file created
     def self.save_file_on_server(file, folder, subfolder: nil, resize_to_limit: nil)
-      filename = file.filename.to_s
+      filename = file.filename.to_s.encode("Shift_JIS")
 
       folder = File.join(folder, subfolder) unless subfolder.nil?
       Dir.mkdir(folder) unless Dir.exist?(folder)

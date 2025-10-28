@@ -1,3 +1,6 @@
+0.4.1:
+  - fix issue with `has_many_attached` associations not working properly with folder names
+  - properly handle `ActiveStorage::Attached::Many` objects by iterating through their attachments
 0.3.4:
   - add resize before download capability
 0.3.2:

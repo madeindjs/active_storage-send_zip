@@ -20,9 +20,16 @@ module ActiveStorage
       temp_folder = Dir.mktmpdir 'active_storage-send_zip'
 
       if files.is_a? Hash
-        filepaths = construct_with_hash(files, temp_folder)
+        construct_with_hash(files, temp_folder)
       elsif files.respond_to? :each
-        files.each { |file| save_file_on_server(file, temp_folder, resize_to_limit: resize_to_limit) }
+        # Handle ActiveStorage::Attached::Many objects by iterating through their attachments
+        if defined?(ActiveStorage::Attached::Many) && files.is_a?(ActiveStorage::Attached::Many)
+          files.attachments.each do |attachment|
+            save_file_on_server(attachment, temp_folder, resize_to_limit: resize_to_limit)
+          end
+        else
+          files.each { |file| save_file_on_server(file, temp_folder, resize_to_limit: resize_to_limit) }
+        end
       else
         raise ArgumentError, '`files` must be an hash or an iterable object'
       end
@@ -38,6 +45,11 @@ module ActiveStorage
       filepaths = []
 
       files.each do |subfolder, filesHash|
+        # Handle ActiveStorage::Attached::Many objects by converting them to attachments array
+        if defined?(ActiveStorage::Attached::Many) && filesHash.is_a?(ActiveStorage::Attached::Many)
+          filesHash = filesHash.attachments
+        end
+
         filesHash = [filesHash] unless filesHash.is_a? Array
 
         filesHash.each do |f|
@@ -84,9 +96,7 @@ module ActiveStorage
       end
 
       # resize images if needed
-      unless resize_to_limit.nil?
-        file = file.variant(resize_to_limit: resize_to_limit).processed
-      end
+      file = file.variant(resize_to_limit: resize_to_limit).processed unless resize_to_limit.nil?
 
       # write the file on disk
       File.open(filepath, 'wb') { |f| f.write(file.service.download(file.key)) }
@@ -117,7 +127,7 @@ module ActiveStorage
         end
 
         File.read(temp_file.path)
-      ensure
+
         # close all ressources & remove temporary files
         # temp_file.close
         # temp_file.unlink

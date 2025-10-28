@@ -59,13 +59,13 @@ class HolidaysController < ApplicationController
   include ActiveStorage::SendZip
 
   def zip
-    send_zip {
+    send_zip({
       'Holidays in Lyon <3' => Holidays.where(place: 'lyon').first.pictures,
       'Holidays in Paris' => [
         'Eiffle Tower' => Holidays.where(place: 'eiffle_tower').first.pictures,
         Holidays.where(place: 'paris').first.pictures
       ]
-    }
+    })
   end
 end
 ~~~
@@ -86,6 +86,8 @@ Will produce a `.zip` archive like this:
     ├── b.png
     └── c.gif
 ~~~
+
+> Note: `has_many_attached` associations (like `Holidays.where(place: 'lyon').first.pictures`) are now properly supported and will automatically extract the individual attachments.
 
 
 ### Resize images before downloading

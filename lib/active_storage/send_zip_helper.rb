@@ -106,7 +106,7 @@ module ActiveStorage
 
       begin
         # Initialize the temp file as a zip file
-        Zip::ZipOutputStream.open(temp_file) { |zos| }
+        Zip::OutputStream.open(temp_file) { |zos| }
 
         # open the zip
         Zip::File.open(temp_file.path, create: true) do |zip|

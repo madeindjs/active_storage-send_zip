@@ -4,17 +4,13 @@ require 'test_helper'
 require 'pathname'
 
 class ActiveStorageMock
-  attr_reader :filename, :download, :key
+  attr_reader :filename, :download, :key, :service
 
-  def initialize(filename = 'foo.txt')
+  def initialize(filename = 'foo.txt', content = 'content of file')
     @filename = filename
-    @download = 'content of file'
+    @download = content
     @key = 'service key'
     @service = ActiveStorageServiceMock.new(self)
-  end
-
-  def service
-    @service
   end
 
   def variant(resize_to_limit: nil)
@@ -23,17 +19,13 @@ class ActiveStorageMock
 end
 
 class ActiveStorageVariantMock
-  attr_reader :key, :download
+  attr_reader :key, :download, :service
 
   def initialize(resize_to_limit = nil)
     @resize_to_limit = resize_to_limit
     @download = 'content of file'
     @key = 'service key'
     @service = ActiveStorageServiceMock.new(self)
-  end
-
-  def service
-    @service
   end
 
   def processed
@@ -46,7 +38,7 @@ class ActiveStorageServiceMock
     @mock = mock
   end
 
-  def download(key)
+  def download(_key)
     @mock.download
   end
 end
@@ -109,9 +101,9 @@ class ActiveStorage::SendZipTest < Minitest::Test
       ],
       'folder B' => [
         ActiveStorageMock.new('bar.txt'),
-        'folder C' => [
+        { 'folder C' => [
           ActiveStorageMock.new
-        ]
+        ] }
       ],
       0 => ActiveStorageMock.new,
       1 => ActiveStorageMock.new('bar.txt')
@@ -126,6 +118,89 @@ class ActiveStorage::SendZipTest < Minitest::Test
     ]
 
     assert_produce_resized_files files, count: 2
+  end
+
+  def test_it_should_handle_empty_files
+    files = []
+
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files)
+    temp_folder_glob = File.join temp_folder, '**', '*'
+    files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }
+
+    assert_equal 0, files_path.count
+    refute_nil ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
+  end
+
+  def test_it_should_handle_filename_collision
+    # Create mocks with same filename to test collision handling
+    files = [
+      ActiveStorageMock.new('same_name.txt'),
+      ActiveStorageMock.new('same_name.txt')
+    ]
+
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files)
+    temp_folder_glob = File.join temp_folder, '**', '*'
+    files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }
+
+    assert_equal 2, files_path.count
+    # Both files should have been saved with different names due to collision handling
+    filenames = files_path.map { |path| File.basename(path) }
+    assert(filenames.all? { |name| name.include?('same_name') })
+  end
+
+  def test_it_should_handle_deeply_nested_directories
+    files = {
+      'level1' => {
+        'level2' => {
+          'level3' => [
+            ActiveStorageMock.new,
+            ActiveStorageMock.new('bar.txt')
+          ]
+        },
+        'another_level2' => [
+          ActiveStorageMock.new('baz.txt')
+        ]
+      }
+    }
+
+    assert_produce_nested_files files, folder_count: 4, files_count: 3
+  end
+
+  def test_it_should_handle_nil_values_gracefully
+    files = {
+      'folder_with_files' => [
+        ActiveStorageMock.new
+      ],
+      'folder_with_nil' => nil
+    }
+
+    # Should raise an error when trying to iterate over nil
+    assert_raises NoMethodError do
+      ActiveStorage::SendZipHelper.save_files_on_server(files)
+    end
+  end
+
+  def test_it_should_create_zip_with_various_file_sizes
+    # Mock different file sizes by customizing download content
+    large_file_mock = ActiveStorageMock.new('large.txt')
+    # Simulate larger content
+    large_file_mock.instance_variable_set(:@download, 'content' * 1000)
+
+    files = [
+      ActiveStorageMock.new('small.txt'),
+      large_file_mock
+    ]
+
+    temp_folder = ActiveStorage::SendZipHelper.save_files_on_server(files)
+    temp_folder_glob = File.join temp_folder, '**', '*'
+    files_path = Dir.glob(temp_folder_glob).reject { |e| File.directory? e }
+
+    assert_equal 2, files_path.count
+
+    # Verify zip creation works with different file sizes
+    zip_content = ActiveStorage::SendZipHelper.create_temporary_zip_file(temp_folder)
+    refute_nil zip_content
+    assert zip_content.length > 0
   end
 
   private

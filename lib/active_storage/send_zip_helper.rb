@@ -109,7 +109,7 @@ module ActiveStorage
         Zip::OutputStream.open(temp_file) { |zos| }
 
         # open the zip
-        Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip|
+        Zip::File.open(temp_file.path, create: true) do |zip|
           files.each do |filepath|
             filepath_zip = filepath.sub(folderpath, '').sub(File::SEPARATOR, '')
             zip.add filepath_zip, filepath
